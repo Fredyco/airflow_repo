@@ -1,0 +1,15 @@
+# Rahasia lokal (MONGO_URI dsb) - JANGAN di-commit
+.env
+
+# Output yang dihasilkan saat demo/tugas dijalankan
+workspace/data/crypto/
+workspace/data/output/
+workspace/gx/
+**/.ipynb_checkpoints/
+**/spark-warehouse/
+**/metastore_db/
+derby.log
+
+__pycache__/
+*.py[cod]
+.DS_Store

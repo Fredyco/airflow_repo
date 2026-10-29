@@ -1,0 +1,11 @@
+# Paket untuk tugas GC6 & M3 (Airflow di-install terpisah di Dockerfile bersama constraints-nya).
+# Versi paket yang tercantum di constraints Airflow akan mengikuti constraints tsb agar tidak bentrok.
+great-expectations==1.24.1
+pyspark==4.2.1
+pymongo
+psycopg2-binary
+asyncpg            # dibutuhkan Airflow 3 untuk metadata DB PostgreSQL
+sqlalchemy
+pandas>=2.2.3,<3  # PySpark 4.2 belum mendukung penuh pandas 3
+ipykernel
+jupyterlab

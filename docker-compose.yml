@@ -1,0 +1,45 @@
+name: de-lab
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: airflow
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    ports:
+      - "${POSTGRES_HOST_PORT:-5433}:5432"   # port di laptop (5433 agar tidak bentrok dg Postgres lokal)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  lab:
+    build: .
+    image: de-lab:py313
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SERVICES: ${SERVICES:-all}
+      MONGO_URI: ${MONGO_URI:-}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_HOST: postgres
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/airflow
+    volumes:
+      - ./workspace:/workspace
+    ports:
+      - "8888:8888"   # JupyterLab
+      - "8080:8080"   # Airflow UI
+      - "4040:4040"   # Spark UI
+    mem_limit: 3g
+    restart: unless-stopped
+
+volumes:
+  pgdata:
