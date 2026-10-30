@@ -1,47 +1,46 @@
 name: de-lab
 
 services:
-  postgres:
+  # Tempat kerja: Jupyter (8888) + Airflow (8080) + Spark
+  lab:
+    build: .
+    image: de-lab:py313
+    env_file:
+      - path: .env              # PG_* (PostgreSQL di laptop), MONGO_URI, SERVICES
+        required: false
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
+    ports:
+      - "8888:8888"   # JupyterLab
+      - "8080:8080"   # Airflow
+      - "4040:4040"   # Spark UI
+    volumes:
+      - ./workspace:/workspace  # folder workspace di laptop = /workspace di container
+      - airflow-logs:/opt/airflow/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # supaya bisa connect ke PostgreSQL di laptop
+    depends_on:
+      airflow-db:
+        condition: service_healthy
+    mem_limit: 3g
+    restart: unless-stopped
+
+  # Database internal Airflow (riwayat run, status task). Tidak dipakai untuk data tugas.
+  airflow-db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
-    ports:
-      - "${POSTGRES_HOST_PORT:-5433}:5432"   # port di laptop (5433 agar tidak bentrok dg Postgres lokal)
+      - airflow-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d airflow"]
+      test: ["CMD-SHELL", "pg_isready -U airflow -d airflow"]
       interval: 5s
       timeout: 5s
       retries: 20
     restart: unless-stopped
 
-  lab:
-    build: .
-    image: de-lab:py313
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      SERVICES: ${SERVICES:-all}
-      MONGO_URI: ${MONGO_URI:-}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_HOST: postgres
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/airflow
-    volumes:
-      - ./workspace:/workspace            # folder laptop <-> container (edit langsung, tanpa restart)
-      - airflow-logs:/opt/airflow/logs    # log task Airflow tetap ada walau container dihapus
-    ports:
-      - "8888:8888"   # JupyterLab
-      - "8080:8080"   # Airflow UI
-      - "4040:4040"   # Spark UI
-    mem_limit: 3g
-    restart: unless-stopped
-
 volumes:
-  pgdata:          # data PostgreSQL (tabel dwh, riwayat run Airflow)
+  airflow-db-data:
   airflow-logs:

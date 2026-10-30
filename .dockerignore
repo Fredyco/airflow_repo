@@ -1,4 +1,5 @@
-workspace/
-*.md
-.env
-.git
+# Hanya file ini yang dibutuhkan saat build image
+*
+!requirements.txt
+!entrypoint.sh
+!spark-defaults.conf

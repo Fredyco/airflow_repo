@@ -45,8 +45,8 @@ RUN apt-get update \
     && mkdir -p /opt/airflow/logs /workspace /opt/spark-conf \
     && chown -R student:student /opt/airflow /workspace
 
-COPY --from=builder /opt/venv /opt/venv
-COPY docker/spark-defaults.conf /opt/spark-conf/spark-defaults.conf
+COPY --from=builder --chown=student:student /opt/venv /opt/venv
+COPY spark-defaults.conf /opt/spark-conf/spark-defaults.conf
 COPY --chmod=755 entrypoint.sh /entrypoint.sh
 # Buang CR (line ending Windows) jika file di-clone/di-edit di Windows
 RUN sed -i 's/\r$//' /entrypoint.sh /opt/spark-conf/spark-defaults.conf

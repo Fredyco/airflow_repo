@@ -1,15 +1,15 @@
 '''
-Demo 04 - Pipeline ELT (Extract -> Load -> Transform) dengan TaskFlow API.
+Demo 03 - Pipeline ELT (Extract -> Load -> Transform) dengan TaskFlow API.
 
     extract_load_raw  >>  transform_staging  >>  transform_mart  >>  quality_check
 
-Perbedaan dengan ETL (demo_03):
+Perbedaan dengan ETL (demo_02):
 - ETL : data ditransformasi DULU (di Python/Spark), baru dimuat ke database.
 - ELT : data mentah dimuat APA ADANYA ke database (schema raw), lalu ditransformasi
         DI DALAM database dengan SQL (schema staging -> mart).
 
 Sumber data : workspace/data/demo_sales.csv & demo_customers.csv
-Tujuan      : PostgreSQL database dwh  (schema raw, staging, mart)
+Tujuan      : PostgreSQL di laptop (setting PG_* di file .env), schema raw, staging, mart
 SQL         : workspace/scripts/elt/sql/
 '''
 import os
@@ -23,13 +23,13 @@ SQL_DIR = Path("/workspace/scripts/elt/sql")
 
 
 def get_engine():
-    '''Koneksi SQLAlchemy ke database dwh (kredensial dari environment container).'''
+    '''Koneksi ke PostgreSQL di laptop. Host, user, password diambil dari file .env (PG_*).'''
     from sqlalchemy import create_engine
 
-    user = os.getenv("POSTGRES_USER", "postgres")
-    password = os.getenv("POSTGRES_PASSWORD", "postgres")
-    host = os.getenv("POSTGRES_HOST", "postgres")
-    return create_engine(f"postgresql+psycopg2://{user}:{password}@{host}:5432/dwh")
+    env = os.environ
+    return create_engine(
+        f"postgresql+psycopg2://{env['PG_USER']}:{env['PG_PASSWORD']}@{env['PG_HOST']}:{env['PG_PORT']}/{env['PG_DB']}"
+    )
 
 
 def run_sql_file(filename):
@@ -41,12 +41,10 @@ def run_sql_file(filename):
 
 
 @dag(
-    dag_id="demo_04_sales_elt",
-    description="ELT: CSV mentah -> PostgreSQL raw -> SQL staging -> SQL mart",
+    dag_id="demo_03_sales_elt",
     start_date=datetime(2025, 1, 1),
     schedule="@daily",
     catchup=False,
-    tags=["demo", "elt", "sql"],
 )
 def sales_elt():
 

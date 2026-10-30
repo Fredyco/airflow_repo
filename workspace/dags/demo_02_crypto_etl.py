@@ -1,15 +1,15 @@
 '''
-Demo 03 - Pipeline ETL harga crypto yang menjalankan script Python terpisah.
+Demo 02 - Pipeline ETL harga crypto yang menjalankan script Python terpisah.
 
     extract_prices  >>  transform_with_spark  >>  load_to_postgres
 
 - extract   : ambil harga crypto (USD) dari API CoinGecko          -> data/crypto/extract_result.csv
 - transform : PySpark + kurs USD/IDR dari API Frankfurter          -> data/crypto/transform_result.csv
-- load      : simpan ke PostgreSQL lokal (database dwh, tabel crypto_price)
+- load      : simpan ke PostgreSQL di laptop (setting PG_* di file .env), tabel crypto_price
 
 Script ada di folder workspace/scripts/crypto/. Pola ini sama dengan tugas M3
 (extract.py / transform.py / load.py dipanggil dari DAG), hanya tujuan load-nya PostgreSQL.
-Cek hasil: `SELECT * FROM crypto_price ORDER BY loaded_at DESC;` di database dwh.
+Cek hasil di pgAdmin: `SELECT * FROM crypto_price ORDER BY loaded_at DESC;`
 '''
 from datetime import datetime, timedelta
 
@@ -25,14 +25,12 @@ default_args = {
 }
 
 with DAG(
-    dag_id="demo_03_crypto_etl",
-    description="ETL harga crypto: CoinGecko -> PySpark (kurs IDR) -> PostgreSQL",
+    dag_id="demo_02_crypto_etl",
     default_args=default_args,
     start_date=datetime(2025, 1, 1),
     schedule="0 * * * *",                 # setiap jam (menit ke-0)
     catchup=False,
     max_active_runs=1,                    # hindari 2 Spark job bersamaan di laptop
-    tags=["demo", "etl", "spark"],
 ) as dag:
 
     extract_prices = BashOperator(
