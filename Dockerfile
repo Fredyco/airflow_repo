@@ -42,7 +42,7 @@ RUN apt-get update \
     # path JAVA_HOME yang sama untuk arm64 maupun amd64
     && ln -s /usr/lib/jvm/java-21-openjdk-* /usr/lib/jvm/default-java \
     && useradd -m -u 1000 -s /bin/bash student \
-    && mkdir -p /opt/airflow /workspace /opt/spark-conf \
+    && mkdir -p /opt/airflow/logs /workspace /opt/spark-conf \
     && chown -R student:student /opt/airflow /workspace
 
 COPY --from=builder /opt/venv /opt/venv

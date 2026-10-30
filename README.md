@@ -43,14 +43,30 @@ docker compose up -d --build     # build pertama kali agak lama (download ±1 GB
 | Spark UI | http://localhost:4040 (saat SparkSession aktif) |
 | PostgreSQL | `localhost:5433`, user/pass `postgres`/`postgres`, database `dwh` |
 
-Mematikan: `docker compose down` (data Postgres tetap aman di volume).
+Pause sementara: `docker compose stop` → lanjut lagi: `docker compose start`.
+Mematikan & hapus container: `docker compose down` (data tetap aman, lihat bagian 3).
 Hapus total termasuk data: `docker compose down -v`.
 
 Perintah `docker compose ...` sama persis di Windows (PowerShell/CMD) dan Mac.
 
 **Laptop RAM kecil?** Untuk GC6 cukup Jupyter saja: di file `.env` ubah `SERVICES=all` menjadi `SERVICES=jupyter`, lalu jalankan ulang `docker compose up -d`.
 
-## 3. Struktur folder
+## 3. Data & update file (tanpa restart)
+
+| Yang diubah / disimpan | Tersimpan di | Perlu restart? |
+|---|---|---|
+| Notebook, DAG, script, CSV di `workspace/` | **folder laptop** (bind mount `./workspace` ↔ `/workspace`) | Tidak. DAG baru/berubah muncul di Airflow ±30 detik |
+| Tabel PostgreSQL (`dwh`) & riwayat run Airflow | volume Docker `pgdata` | – |
+| Log task Airflow | volume Docker `airflow-logs` | – |
+| `.env` / `docker-compose.yml` | – | `docker compose up -d` |
+| `Dockerfile` / `requirements.txt` | – | `docker compose up -d --build` |
+
+Semua data di atas **tetap aman** walau container di-stop, di-pause, dihapus (`docker compose down`), bahkan image-nya dihapus lalu di-build ulang.
+Data hanya hilang jika volume ikut dihapus: `docker compose down -v`.
+
+> Paket yang di-`pip install` manual di dalam container akan hilang saat container dibuat ulang. Supaya permanen, tambahkan ke `requirements.txt` lalu `docker compose up -d --build`.
+
+## 4. Struktur folder
 Folder `workspace/` di laptop = `/workspace` di container. Semua file tersimpan di laptop kamu.
 ```
 workspace/
@@ -70,7 +86,11 @@ workspace/
     └── elt/sql/                  # 01_staging.sql, 02_mart.sql (dipanggil demo_04)
 ```
 
-## 4. Materi demo
+## 5. Materi demo
+
+Panduan step by step (penjelasan baris per baris):
+- [`panduan/01_materi_pyspark.md`](panduan/01_materi_pyspark.md)
+- [`panduan/02_materi_airflow.md`](panduan/02_materi_airflow.md)
 
 ### Spark — `notebooks/demo_spark.ipynb`
 Buka di JupyterLab lalu *Run All*. Isi: SparkSession & Spark UI, membuat DataFrame, RDD (map/filter/reduce, word count, RDD→DataFrame), baca CSV/JSON/TXT (inferSchema vs schema eksplisit),
@@ -111,7 +131,7 @@ Contoh perintah: `docker compose exec postgres psql -U postgres -d dwh` (atau DB
 
 > demo_03 butuh internet (API publik). Jika API sedang membatasi request, task otomatis di-retry 2x.
 
-## 5. Contoh kode
+## 6. Contoh kode
 
 **PySpark → PostgreSQL (GC6)**
 ```python
@@ -153,7 +173,7 @@ schedule="10-30/10 9 * * 6", start_date=datetime(2024, 11, 1)
 ```
 Agar DAG bisa `import extract`, simpan `extract.py`, `transform.py`, `load.py` di folder `workspace/dags/` yang sama.
 
-## 6. Troubleshooting
+## 7. Troubleshooting
 - **Windows: `entrypoint.sh: no such file or directory` / `\r: command not found`** — sudah ditangani otomatis saat build. Jika masih muncul, jalankan `docker compose build --no-cache`.
 - **Windows: folder proyek sebaiknya tidak di dalam OneDrive** (sinkronisasi OneDrive bisa mengunci file). Taruh misalnya di `C:\Users\<nama>\de-lab`.
 - **Mac Apple Silicon & Windows/Intel** memakai image yang sama; Docker otomatis build sesuai arsitektur laptop.

@@ -33,7 +33,8 @@ services:
       POSTGRES_HOST: postgres
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/airflow
     volumes:
-      - ./workspace:/workspace
+      - ./workspace:/workspace            # folder laptop <-> container (edit langsung, tanpa restart)
+      - airflow-logs:/opt/airflow/logs    # log task Airflow tetap ada walau container dihapus
     ports:
       - "8888:8888"   # JupyterLab
       - "8080:8080"   # Airflow UI
@@ -42,4 +43,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  pgdata:
+  pgdata:          # data PostgreSQL (tabel dwh, riwayat run Airflow)
+  airflow-logs:
