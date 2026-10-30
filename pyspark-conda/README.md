@@ -59,18 +59,31 @@ Buka `.env`, isi `PG_PASSWORD` dengan password pgAdmin. `PG_HOST=localhost` kare
 
 ## 4. Jalankan notebook
 
+Pilih salah satu cara.
+
+**A. VS Code (disarankan)**
+
+1. Install extension **Python** dan **Jupyter** di VS Code.
+2. *File → Open Folder* → pilih folder `pyspark-conda`.
+3. Buka `notebooks/01_pandas_vs_spark.ipynb`.
+4. Klik **Select Kernel** (kanan atas) → *Python Environments* → pilih **`pyspark313`**.
+   Env tidak muncul? `Ctrl/Cmd + Shift + P` → *Python: Select Interpreter* → pilih `pyspark313`, lalu ulangi.
+5. Jalankan cell dengan `Shift + Enter`.
+
+**B. JupyterLab di browser**
+
 **Terminal** (di folder `pyspark-conda`, env sudah aktif):
 
 ```bash
 jupyter lab
 ```
 
-Browser terbuka. Masuk folder `notebooks`, jalankan berurutan:
+Masuk folder `notebooks`. Tekan `Ctrl + C` di terminal untuk mematikan Jupyter.
+
+Jalankan berurutan:
 
 1. `01_pandas_vs_spark.ipynb` → syntax pandas vs Spark.
 2. `02_etl_superstore.ipynb` → ETL ke PostgreSQL. Saat pertama jalan, driver PostgreSQL di-download otomatis (butuh internet).
-
-Tekan `Ctrl + C` di terminal untuk mematikan Jupyter.
 
 ## 5. Cek hasil
 
@@ -81,8 +94,9 @@ Untuk mengulang dari awal: jalankan lagi `02_create_tables.sql` (tabel dikosongk
 
 | Masalah | Solusi |
 | --- | --- |
-| `JAVA_GATEWAY_EXITED` / Java tidak ditemukan | Pastikan env aktif (`conda activate pyspark313`) lalu `java -version`. Kalau tidak ada: `conda install -c conda-forge openjdk=21 -y` |
+| `JAVA_GATEWAY_EXITED` / Java tidak ditemukan | Pastikan kernel/env yang dipilih `pyspark313` dan Java sudah terpasang di env itu: `conda activate pyspark313` → `java -version`. Kalau tidak ada: `conda install -c conda-forge openjdk=21 -y`, lalu restart kernel |
 | `jupyter: command not found` | Env belum aktif. `conda activate pyspark313` dulu |
+| VS Code: kernel `pyspark313` tidak ada | Pastikan extension Python & Jupyter terpasang, lalu *Python: Select Interpreter* → `pyspark313` |
 | `Belum diisi di file .env` | Buat `.env` dari `.env.example`, lalu di Jupyter: *Kernel → Restart Kernel* |
 | `Password salah` | Samakan `PG_PASSWORD` di `.env` dengan password pgAdmin, lalu restart kernel |
 | Gagal download driver PostgreSQL | Butuh internet saat pertama kali menjalankan notebook 02 |
