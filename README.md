@@ -39,3 +39,5 @@ workspace/
 ```
 
 Dari dalam container, PostgreSQL di laptop diakses dengan host `host.docker.internal` (sudah diatur di `.env`).
+
+**Tanpa Docker?** Materi PySpark juga bisa dijalankan dengan conda: lihat folder [`pyspark-conda/`](pyspark-conda/README.md).
