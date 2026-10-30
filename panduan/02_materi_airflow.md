@@ -710,11 +710,21 @@ with DAG(
     catchup=False,
 ) as dag:
 
-    print_starting = BashOperator(task_id="starting", bash_command=f'mkdir -p {OUT} && echo "I am reading the CSV now....."')
+    print_starting = BashOperator(
+        task_id="starting",
+        bash_command=f'mkdir -p {OUT} && echo "I am reading the CSV now....."',
+    )
+
     csvJson = PythonOperator(task_id="convertCSVtoJson", python_callable=csvToJson)
+
     cleanData = PythonOperator(task_id="clean", python_callable=cleanSales)
+
     selectData = PythonOperator(task_id="filter", python_callable=filterData)
-    copyFile = BashOperator(task_id="copy", bash_command=f"cp {OUT}/may23-june3.csv {OUT}/may23-june3_copy.csv && ls -l {OUT}")
+
+    copyFile = BashOperator(
+        task_id="copy",
+        bash_command=f"cp {OUT}/may23-june3.csv {OUT}/may23-june3_copy.csv && ls -l {OUT}",
+    )
 
     print_starting >> csvJson
     print_starting >> cleanData >> selectData >> copyFile
