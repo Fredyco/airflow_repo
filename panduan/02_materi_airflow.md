@@ -35,6 +35,8 @@ airflow_repo/
 
 ## 0. Jalankan lab & buka Airflow
 
+> Belum punya foldernya? Ikuti **README → 1. Persiapan** (install Docker Desktop & download repo `airflow_repo`).
+
 **Terminal** (di folder `airflow_repo`):
 
 ```bash

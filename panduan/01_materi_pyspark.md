@@ -24,6 +24,8 @@ docker/spark-defaults.conf              ← setting Spark (2 core, memory 1 GB)
 
 ## 0. Jalankan lab
 
+> Belum punya foldernya? Ikuti **README → 1. Persiapan** (install Docker Desktop & download repo `airflow_repo`).
+
 **Terminal** (di folder `airflow_repo`):
 
 ```bash

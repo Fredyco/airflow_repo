@@ -20,7 +20,14 @@ Bisa dipakai di **Windows 10/11, macOS (Intel & Apple Silicon M1–M4), dan Linu
    - **Mac:** pilih installer sesuai chip (*Apple Silicon* atau *Intel*).
    - Buka Docker Desktop dan tunggu sampai status **Engine running**.
    - Memory: Mac → *Settings → Resources* set minimal **4 GB**. Windows (WSL 2) otomatis memakai sampai 50% RAM laptop, tidak perlu diubah.
-2. Buka terminal di folder ini (Windows: **PowerShell**, Mac: **Terminal**), salin file env:
+2. Download repo ini (pilih salah satu):
+   - **Pakai git:**
+     ```bash
+     git clone https://github.com/Fredyco/airflow_repo.git
+     cd airflow_repo
+     ```
+   - **Tanpa git:** di halaman GitHub klik **Code → Download ZIP**, extract, lalu buka folder hasil extract.
+3. Buka terminal di folder `airflow_repo` (Windows: **PowerShell**, Mac: **Terminal**), salin file env:
    ```bash
    # Mac / Linux
    cp .env.example .env
@@ -69,21 +76,26 @@ Data hanya hilang jika volume ikut dihapus: `docker compose down -v`.
 ## 4. Struktur folder
 Folder `workspace/` di laptop = `/workspace` di container. Semua file tersimpan di laptop kamu.
 ```
-workspace/
-├── notebooks/
-│   └── demo_spark.ipynb          # materi PySpark
-├── data/
-│   ├── demo_sales.csv            # dataset demo (ada data kotor untuk latihan cleaning)
-│   └── demo_customers.csv
-├── dags/                         # semua DAG Airflow
-│   ├── demo_01_hello_bash.py
-│   ├── demo_02_python_parallel.py
-│   ├── demo_03_crypto_etl.py
-│   ├── demo_04_sales_elt.py
-│   └── demo_05_csv_clean_slide.py
-└── scripts/
-    ├── crypto/                   # extract.py, transform.py, load.py (dipanggil demo_03)
-    └── elt/sql/                  # 01_staging.sql, 02_mart.sql (dipanggil demo_04)
+airflow_repo/
+├── docker-compose.yml, Dockerfile, ...   # setup lab (tidak perlu diubah)
+├── panduan/                              # materi step by step
+│   ├── 01_materi_pyspark.md
+│   └── 02_materi_airflow.md
+└── workspace/                            # tempat kerja (notebook, DAG, data)
+    ├── notebooks/
+    │   └── demo_spark.ipynb          # materi PySpark
+    ├── data/
+    │   ├── demo_sales.csv            # dataset demo (ada data kotor untuk latihan cleaning)
+    │   └── demo_customers.csv
+    ├── dags/                         # semua DAG Airflow
+    │   ├── demo_01_hello_bash.py
+    │   ├── demo_02_python_parallel.py
+    │   ├── demo_03_crypto_etl.py
+    │   ├── demo_04_sales_elt.py
+    │   └── demo_05_csv_clean_slide.py
+    └── scripts/
+        ├── crypto/                   # extract.py, transform.py, load.py (dipanggil demo_03)
+        └── elt/sql/                  # 01_staging.sql, 02_mart.sql (dipanggil demo_04)
 ```
 
 ## 5. Materi demo
@@ -175,7 +187,7 @@ Agar DAG bisa `import extract`, simpan `extract.py`, `transform.py`, `load.py` d
 
 ## 7. Troubleshooting
 - **Windows: `entrypoint.sh: no such file or directory` / `\r: command not found`** — sudah ditangani otomatis saat build. Jika masih muncul, jalankan `docker compose build --no-cache`.
-- **Windows: folder proyek sebaiknya tidak di dalam OneDrive** (sinkronisasi OneDrive bisa mengunci file). Taruh misalnya di `C:\Users\<nama>\de-lab`.
+- **Windows: folder proyek sebaiknya tidak di dalam OneDrive** (sinkronisasi OneDrive bisa mengunci file). Taruh misalnya di `C:\Users\<nama>\airflow_repo`.
 - **Mac Apple Silicon & Windows/Intel** memakai image yang sama; Docker otomatis build sesuai arsitektur laptop.
 - Log Airflow: `docker compose exec lab tail -f /opt/airflow/logs/scheduler.out`
 - Jalankan perintah di container: `docker compose exec lab bash`
