@@ -5,9 +5,6 @@ import os
 
 from sqlalchemy import create_engine
 
-engine = create_engine(f"postgresql+psycopg2://{os.environ['PG_USER']}:{os.environ['PG_PASSWORD']}"
-                       f"@{os.environ['PG_HOST']}:{os.environ['PG_PORT']}/{os.environ['PG_DB']}")
-
 SQL = '''
 DROP TABLE IF EXISTS clean_sales;
 CREATE TABLE clean_sales AS
@@ -22,6 +19,11 @@ FROM raw_sales
 WHERE "Quantity" IS NOT NULL;
 '''
 
-with engine.begin() as conn:
-    conn.exec_driver_sql(SQL)
-print("clean_sales selesai dibuat")
+
+if __name__ == "__main__":
+    engine = create_engine(f"postgresql+psycopg2://{os.environ['PG_USER']}:{os.environ['PG_PASSWORD']}"
+                           f"@{os.environ['PG_HOST']}:{os.environ['PG_PORT']}/{os.environ['PG_DB']}")
+
+    with engine.begin() as conn:
+        conn.exec_driver_sql(SQL)
+    print("clean_sales selesai dibuat")
