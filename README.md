@@ -37,7 +37,7 @@ workspace/
 ├── dags/                          # DAG Airflow
 │   ├── demo_01_hello.py
 │   ├── demo_02_crypto_etl.py      # ETL: API → Spark → PostgreSQL
-│   ├── demo_03_sales_elt.py       # ELT: CSV → raw → SQL staging/mart
+│   ├── demo_03_sales_elt.py       # ELT: CSV → raw_sales → SQL → clean_sales
 │   └── demo_04_superstore_etl.py  # notebook 02 dijadikan pipeline Spark
 └── scripts/                       # script yang dipanggil DAG (crypto/, elt/, superstore/)
 docker-simple/                     # Dockerfile & docker-compose versi sederhana (untuk penjelasan)

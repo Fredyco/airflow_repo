@@ -1,23 +1,17 @@
 '''
-Demo 03 - Pipeline ELT (Extract -> Load -> Transform) yang menjalankan script Python terpisah.
+Demo 03 - Pipeline ELT: Extract -> Load -> Transform.
 
-    extract_load_raw  >>  transform_staging  >>  transform_mart  >>  quality_check
+    extract_load  >>  transform  >>  quality_check
 
-Perbedaan dengan ETL (demo_02):
-- ETL : data ditransformasi DULU (di Python/Spark), baru dimuat ke database.
-- ELT : data mentah dimuat APA ADANYA ke database (schema raw), lalu ditransformasi
-        DI DALAM database dengan SQL (schema staging -> mart).
+- ETL : data dibersihkan DULU (Python/Spark), baru dimasukkan ke database.
+- ELT : data mentah dimasukkan DULU ke database (raw_sales), lalu dibersihkan DI DALAM database dengan SQL (clean_sales).
 
-Sumber data : workspace/data/demo_sales.csv & demo_customers.csv
-Tujuan      : PostgreSQL di laptop (setting PG_* di file .env), schema raw, staging, mart
-Script      : workspace/scripts/elt/ (SQL di workspace/scripts/elt/sql/)
+Script: workspace/scripts/elt/
 '''
 from datetime import datetime
 
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.sdk import DAG
-
-SCRIPTS = "/workspace/scripts/elt"
 
 with DAG(
     dag_id="demo_03_sales_elt",
@@ -26,24 +20,19 @@ with DAG(
     catchup=False,
 ) as dag:
 
-    extract_load_raw = BashOperator(
-        task_id="extract_load_raw",
-        bash_command=f"python {SCRIPTS}/extract_load.py",
+    extract_load = BashOperator(
+        task_id="extract_load",
+        bash_command="python /workspace/scripts/elt/extract_load.py",
     )
 
-    transform_staging = BashOperator(
-        task_id="transform_staging",
-        bash_command=f"python {SCRIPTS}/transform.py 01_staging.sql",
-    )
-
-    transform_mart = BashOperator(
-        task_id="transform_mart",
-        bash_command=f"python {SCRIPTS}/transform.py 02_mart.sql",
+    transform = BashOperator(
+        task_id="transform",
+        bash_command="python /workspace/scripts/elt/transform.py",
     )
 
     quality_check = BashOperator(
         task_id="quality_check",
-        bash_command=f"python {SCRIPTS}/quality_check.py",
+        bash_command="python /workspace/scripts/elt/quality_check.py",
     )
 
-    extract_load_raw >> transform_staging >> transform_mart >> quality_check
+    extract_load >> transform >> quality_check

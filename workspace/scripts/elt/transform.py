@@ -1,17 +1,27 @@
 '''
-T: menjalankan file SQL di dalam database (raw -> staging -> mart).
-Contoh: python transform.py 01_staging.sql
+T: transformasi DI DALAM database dengan SQL: raw_sales -> clean_sales.
 '''
-import sys
+import os
 
-from db import get_engine
+from sqlalchemy import create_engine
 
-SQL_DIR = "/workspace/scripts/elt/sql"
+engine = create_engine(f"postgresql+psycopg2://{os.environ['PG_USER']}:{os.environ['PG_PASSWORD']}"
+                       f"@{os.environ['PG_HOST']}:{os.environ['PG_PORT']}/{os.environ['PG_DB']}")
 
-if __name__ == "__main__":
-    filename = sys.argv[1]
-    with open(f"{SQL_DIR}/{filename}") as f:
-        sql = f.read()
-    with get_engine().begin() as conn:      # semua statement dalam satu transaksi
-        conn.exec_driver_sql(sql)
-    print(f"Selesai menjalankan {filename}")
+SQL = '''
+DROP TABLE IF EXISTS clean_sales;
+CREATE TABLE clean_sales AS
+SELECT DISTINCT
+       "OrderID"                    AS order_id,
+       "OrderDate"::date            AS order_date,
+       INITCAP(TRIM("Product"))     AS product,
+       "Quantity"                   AS quantity,
+       "UnitPrice"                  AS unit_price,
+       "Quantity" * "UnitPrice"     AS total_price
+FROM raw_sales
+WHERE "Quantity" IS NOT NULL;
+'''
+
+with engine.begin() as conn:
+    conn.exec_driver_sql(SQL)
+print("clean_sales selesai dibuat")

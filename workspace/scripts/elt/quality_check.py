@@ -1,22 +1,17 @@
 '''
-Validasi sederhana: tabel tidak kosong & tidak ada duplikat order_id.
-Gagal -> script error -> task merah di Airflow.
+Cek hasil: tabel clean_sales tidak boleh kosong. Kalau kosong -> error -> task merah di Airflow.
 '''
-from db import get_engine
+import os
 
-CHECKS = {
-    "stg_sales tidak kosong": "SELECT COUNT(*) > 0 FROM staging.stg_sales",
-    "order_id unik": "SELECT COUNT(*) = COUNT(DISTINCT order_id) FROM staging.stg_sales",
-    "mart tidak kosong": "SELECT COUNT(*) > 0 FROM mart.sales_by_city_month",
-}
+from sqlalchemy import create_engine
 
-if __name__ == "__main__":
-    with get_engine().connect() as conn:
-        for name, sql in CHECKS.items():
-            ok = conn.exec_driver_sql(sql).scalar()
-            print(f"[{'OK' if ok else 'GAGAL'}] {name}")
-            if not ok:
-                raise ValueError(f"Quality check gagal: {name}")
-        raw = conn.exec_driver_sql("SELECT COUNT(*) FROM raw.sales").scalar()
-        staged = conn.exec_driver_sql("SELECT COUNT(*) FROM staging.stg_sales").scalar()
-    print(f"raw.sales {raw} baris -> staging.stg_sales {staged} baris (setelah cleaning)")
+engine = create_engine(f"postgresql+psycopg2://{os.environ['PG_USER']}:{os.environ['PG_PASSWORD']}"
+                       f"@{os.environ['PG_HOST']}:{os.environ['PG_PORT']}/{os.environ['PG_DB']}")
+
+with engine.connect() as conn:
+    raw = conn.exec_driver_sql("SELECT COUNT(*) FROM raw_sales").scalar()
+    clean = conn.exec_driver_sql("SELECT COUNT(*) FROM clean_sales").scalar()
+
+print(f"raw_sales {raw} baris -> clean_sales {clean} baris")
+if clean == 0:
+    raise ValueError("clean_sales kosong!")
