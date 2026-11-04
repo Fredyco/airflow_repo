@@ -18,8 +18,13 @@ def get_engine():
     )
 
 
+def load(df, engine):
+    '''Tambahkan waktu load, lalu append ke tabel crypto_price.'''
+    df["loaded_at"] = pd.Timestamp.now(tz="Asia/Jakarta").tz_localize(None)
+    df.to_sql("crypto_price", con=engine, if_exists="append", index=False)
+    print(f"{len(df)} baris ditambahkan ke tabel crypto_price")
+
+
 if __name__ == "__main__":
     df = pd.read_csv(INPUT, parse_dates=["processed_at"])
-    df["loaded_at"] = pd.Timestamp.now(tz="Asia/Jakarta").tz_localize(None)
-    df.to_sql("crypto_price", con=get_engine(), if_exists="append", index=False)
-    print(f"{len(df)} baris ditambahkan ke tabel crypto_price")
+    load(df, get_engine())
