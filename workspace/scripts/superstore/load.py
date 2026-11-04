@@ -15,6 +15,12 @@ env = os.environ
 jdbc_url = f"jdbc:postgresql://{env['PG_HOST']}:{env['PG_PORT']}/{env['PG_DB']}"
 jdbc_props = {'user': env['PG_USER'], 'password': env['PG_PASSWORD'], 'driver': 'org.postgresql.Driver'}
 
+spark = SparkSession.builder.appName("superstore-load").getOrCreate()
+spark.sparkContext.setLogLevel("ERROR")
+
+# Baca hasil transform DULU. Kalau file belum ada, script berhenti di sini dan tabel tidak ikut terhapus
+star = {name: spark.read.parquet(f'{INPUT}/{name}') for name in TABLES}
+
 # Kosongkan tabel (fact ikut terhapus lewat CASCADE)
 conn = psycopg2.connect(host=env['PG_HOST'], port=env['PG_PORT'], dbname=env['PG_DB'],
                         user=env['PG_USER'], password=env['PG_PASSWORD'], connect_timeout=5)
@@ -23,12 +29,9 @@ with conn, conn.cursor() as cur:
 conn.close()
 print('Tabel dikosongkan')
 
-spark = SparkSession.builder.appName("superstore-load").getOrCreate()
-spark.sparkContext.setLogLevel("ERROR")
-
 # mode='append' supaya primary key & foreign key dari 02_create_tables.sql tetap ada
 for name in TABLES:
-    spark.read.parquet(f'{INPUT}/{name}').write.jdbc(jdbc_url, name, mode='append', properties=jdbc_props)
+    star[name].write.jdbc(jdbc_url, name, mode='append', properties=jdbc_props)
     print('masuk:', name)
 
 # Cek hasil (notebook 02, bagian 4)
