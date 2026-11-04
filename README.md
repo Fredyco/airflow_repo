@@ -35,8 +35,19 @@ workspace/
 ├── sql/                           # buat database & tabel (jalankan di pgAdmin)
 ├── data/                          # file CSV
 ├── dags/                          # DAG Airflow
-└── scripts/                       # script yang dipanggil DAG
+│   ├── demo_01_hello.py
+│   ├── demo_02_crypto_etl.py      # ETL: API → Spark → PostgreSQL
+│   ├── demo_03_sales_elt.py       # ELT: CSV → raw → SQL staging/mart
+│   └── demo_04_superstore_etl.py  # notebook 02 dijadikan pipeline Spark
+└── scripts/                       # script yang dipanggil DAG (crypto/, elt/, superstore/)
+docker-simple/                     # Dockerfile & docker-compose versi sederhana (untuk penjelasan)
 ```
+
+Semua DAG demo memakai pola yang sama: setiap task = `BashOperator` yang menjalankan `python scripts/.../x.py`.
+Demo 04 butuh tabel dari `sql/01_create_database.sql` & `sql/02_create_tables.sql`; setiap run mengosongkan tabel lalu mengisi ulang.
+
+**docker-simple/** berisi versi minimal (1 Dockerfile, 2 container: Airflow standalone + Jupyter) untuk menjelaskan konsep.
+Untuk dipakai sehari-hari tetap gunakan `docker-compose.yml` di root. Jangan jalankan keduanya bersamaan (port 8080/8888 sama).
 
 Dari dalam container, PostgreSQL di laptop diakses dengan host `host.docker.internal` (sudah diatur di `.env`).
 

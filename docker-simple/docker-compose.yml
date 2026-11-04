@@ -1,0 +1,26 @@
+# Versi sederhana: 1 image, 2 container (Airflow & Jupyter), folder workspace dipakai bersama.
+# Jalankan dari folder ini: docker compose up -d --build
+services:
+  airflow:
+    build: .
+    image: de-lab-simple
+    command: airflow standalone        # scheduler + webserver + database SQLite dalam 1 perintah
+    env_file: ../.env                  # PG_HOST, PG_USER, PG_PASSWORD, ...
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../workspace:/workspace        # folder di laptop = /workspace di container
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # supaya bisa connect ke PostgreSQL di laptop
+
+  jupyter:
+    build: .
+    image: de-lab-simple               # image yang sama dengan airflow (dibuild sekali)
+    command: jupyter lab --ip=0.0.0.0 --no-browser --allow-root --IdentityProvider.token=''
+    env_file: ../.env
+    ports:
+      - "8888:8888"
+    volumes:
+      - ../workspace:/workspace
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
