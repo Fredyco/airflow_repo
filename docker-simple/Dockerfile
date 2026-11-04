@@ -1,25 +1,19 @@
-# Versi sederhana untuk penjelasan: Python + Java (Spark) + Airflow + Jupyter
+# Dockerfile = RESEP untuk membuat image. Dibaca dari atas ke bawah.
+
+# 1. Mulai dari image yang sudah ada: Linux + Python 3.13
 FROM python:3.13-slim
 
-# 1. Java dibutuhkan Spark
-RUN apt-get update \
- && apt-get install -y --no-install-recommends openjdk-21-jre-headless \
- && rm -rf /var/lib/apt/lists/*
+# 2. Install Java (Spark butuh Java)
+RUN apt-get update && apt-get install -y openjdk-21-jre-headless
 
-# 2. Library Python (constraints = daftar versi resmi Airflow supaya tidak bentrok)
-RUN pip install --no-cache-dir "apache-airflow==3.3.2" apache-airflow-providers-standard \
-      pyspark==4.2.1 pandas psycopg2-binary sqlalchemy jupyterlab \
-      --constraint https://raw.githubusercontent.com/apache/airflow/constraints-3.3.2/constraints-3.13.txt
+# 3. Install library Python
+RUN pip install apache-airflow pyspark pandas psycopg2-binary
 
-# 3. Driver PostgreSQL untuk Spark (df.write.jdbc)
-ADD https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.14/postgresql-42.7.14.jar \
-    /usr/local/lib/python3.13/site-packages/pyspark/jars/
+# 4. Setting: lokasi folder DAG
+ENV AIRFLOW__CORE__DAGS_FOLDER=/workspace/dags
 
-# 4. Setting Airflow
-ENV AIRFLOW_HOME=/opt/airflow \
-    AIRFLOW__CORE__DAGS_FOLDER=/workspace/dags \
-    AIRFLOW__CORE__LOAD_EXAMPLES=False \
-    AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_ALL_ADMINS=True
-
+# 5. Folder kerja di dalam container
 WORKDIR /workspace
-EXPOSE 8080 8888
+
+# 6. Perintah yang dijalankan saat container nyala
+CMD ["airflow", "standalone"]

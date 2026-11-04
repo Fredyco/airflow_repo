@@ -40,14 +40,14 @@ workspace/
 │   ├── demo_03_sales_elt.py       # ELT: CSV → raw_sales → SQL → clean_sales
 │   └── demo_04_superstore_etl.py  # notebook 02 dijadikan pipeline Spark
 └── scripts/                       # script yang dipanggil DAG (crypto/, elt/, superstore/)
-docker-simple/                     # Dockerfile & docker-compose versi sederhana (untuk penjelasan)
+docker-simple/                     # Dockerfile & docker-compose sederhana, hanya untuk dibaca
 ```
 
 Semua DAG demo memakai pola yang sama: setiap task = `BashOperator` yang menjalankan `python scripts/.../x.py`.
 Demo 04 butuh tabel dari `sql/01_create_database.sql` & `sql/02_create_tables.sql`; setiap run mengosongkan tabel lalu mengisi ulang.
 
-**docker-simple/** berisi versi minimal (1 Dockerfile, 2 container: Airflow standalone + Jupyter) untuk menjelaskan konsep.
-Untuk dipakai sehari-hari tetap gunakan `docker-compose.yml` di root. Jangan jalankan keduanya bersamaan (port 8080/8888 sama).
+**docker-simple/** berisi Dockerfile & docker-compose versi minimal dengan komentar per baris, **hanya untuk belajar cara membacanya** (tidak untuk dijalankan).
+Untuk dipakai sehari-hari gunakan `docker-compose.yml` di root.
 
 Dari dalam container, PostgreSQL di laptop diakses dengan host `host.docker.internal` (sudah diatur di `.env`).
 

@@ -1,26 +1,18 @@
-# Versi sederhana: 1 image, 2 container (Airflow & Jupyter), folder workspace dipakai bersama.
-# Jalankan dari folder ini: docker compose up -d --build
-services:
-  airflow:
-    build: .
-    image: de-lab-simple
-    command: airflow standalone        # scheduler + webserver + database SQLite dalam 1 perintah
-    env_file: ../.env                  # PG_HOST, PG_USER, PG_PASSWORD, ...
-    ports:
-      - "8080:8080"
-    volumes:
-      - ../workspace:/workspace        # folder di laptop = /workspace di container
-    extra_hosts:
-      - "host.docker.internal:host-gateway"   # supaya bisa connect ke PostgreSQL di laptop
+# docker-compose.yml = CARA MENJALANKAN container (port, folder, password, dll).
 
-  jupyter:
-    build: .
-    image: de-lab-simple               # image yang sama dengan airflow (dibuild sekali)
-    command: jupyter lab --ip=0.0.0.0 --no-browser --allow-root --IdentityProvider.token=''
-    env_file: ../.env
+services:                         # daftar container yang dijalankan
+
+  airflow:                        # nama container
+    build: .                      # buat image dari Dockerfile di folder ini
     ports:
-      - "8888:8888"
+      - "8080:8080"               # laptop:container -> buka localhost:8080 di browser
     volumes:
-      - ../workspace:/workspace
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - ../workspace:/workspace   # laptop:container -> folder di laptop muncul di container
+    env_file: ../.env             # password dibaca dari file .env (tidak ditulis di sini)
+
+  postgres:                       # container kedua
+    image: postgres:17            # pakai image jadi dari Docker Hub, tanpa Dockerfile
+    ports:
+      - "5433:5432"               # laptop 5433 -> container 5432 (5432 di laptop sudah dipakai)
+    environment:
+      POSTGRES_PASSWORD: postgres # setting langsung di sini (khusus contoh)
